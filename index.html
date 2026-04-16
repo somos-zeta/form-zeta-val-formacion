@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluación de Formación - Somos Zeta</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --purple: #7030a0;
+      --blue: #1c89af;
+      --dark: #1a1a2e;
+      --gray-50: #f8f9fc;
+      --gray-100: #f1f1f5;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --orange: #d97706;
+      --green: #059669;
+      --gold: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    ::selection { background: rgba(112,48,160,0.15); }
+    body {
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      background: var(--gray-50);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .grid-bg {
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(112,48,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(112,48,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .particle {
+      position: absolute; border-radius: 50%; opacity: 0.25;
+      animation: float-particle var(--dur) ease-in-out var(--delay) infinite;
+    }
+    @keyframes float-particle {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.2; }
+      50% { transform: translateY(-30px) scale(1.3); opacity: 0.45; }
+    }
+
+    .container { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 0 16px; }
+    .header { text-align: center; padding: 32px 20px 20px; }
+    .logo-row { display: inline-flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .logo-img { max-height: 102px; width: auto; filter: drop-shadow(0 2px 8px rgba(112,48,160,0.15)); }
+    .header h1 {
+      font-size: clamp(1.15rem, 3.5vw, 1.6rem); font-weight: 700; color: var(--dark);
+      line-height: 1.3; margin-bottom: 6px; letter-spacing: -0.02em;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-size: 200% 200%; animation: gradientShift 4s ease infinite;
+    }
+    @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+    .alert-box {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border-left: 4px solid var(--orange); border-radius: 8px;
+      padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(217,119,6,0.08);
+      font-size: 0.9rem; color: #92400e; display: flex; align-items: flex-start; gap: 12px;
+    }
+    .alert-icon { font-size: 1.4rem; line-height: 1; }
+    .alert-box strong { color: #78350f; display: block; margin-bottom: 4px; }
+
+    .progress-wrapper {
+      background: #fff; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--gray-100);
+    }
+    .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .progress-label { font-size: 0.73rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.05em; }
+    .progress-pct {
+      font-size: 0.82rem; font-weight: 700; font-family: 'Space Mono', monospace;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .progress-track { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(135deg, var(--purple), var(--blue)); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    .step-nav { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+    .step-btn {
+      display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px;
+      border: 2px solid transparent; background: var(--gray-50); cursor: pointer; transition: all 0.25s ease; font-family: inherit;
+    }
+    .step-btn.active { border-color: var(--purple); background: rgba(112,48,160,0.06); }
+    .step-btn.done { background: rgba(28,137,175,0.06); }
+    .step-badge {
+      width: 22px; height: 22px; border-radius: 6px; background: var(--gray-200); color: #fff;
+      font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;
+    }
+    .step-btn.active .step-badge { background: var(--purple); box-shadow: 0 0 0 4px rgba(112,48,160,0.15); }
+    .step-btn.done .step-badge { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+    .step-btn-label { font-size: 0.78rem; font-weight: 500; color: var(--gray-400); }
+    .step-btn.active .step-btn-label { font-weight: 700; color: var(--purple); }
+    .step-btn.done .step-btn-label { color: var(--blue); }
+
+    .form-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.05); border: 1px solid var(--gray-100); overflow: hidden; }
+    .section-header { padding: 26px 28px 18px; background: linear-gradient(135deg, rgba(112,48,160,0.04), rgba(28,137,175,0.04)); border-bottom: 1px solid var(--gray-100); }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--purple), var(--blue)); color: #fff; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+    }
+    .section-header h2 { font-size: 1.25rem; font-weight: 700; color: var(--dark); letter-spacing: -0.02em; }
+    .section-header .section-sub { font-size: 0.84rem; color: var(--gray-500); margin-top: 4px; }
+
+    .fields-area { padding: 26px 28px 10px; }
+    .form-group { margin-bottom: 32px; animation: fadeUp 0.4s ease both; }
+    @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .label-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+    .q-badge {
+      min-width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--gray-200), #cbd5e1);
+      color: #fff; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; margin-top: 1px;
+    }
+    .q-badge.filled { background: linear-gradient(135deg, var(--blue), var(--purple)); box-shadow: 0 2px 8px rgba(112,48,160,0.25); }
+    .label-row label { font-weight: 600; color: var(--dark); font-size: 0.95rem; line-height: 1.4; flex: 1; }
+    .hint { font-size: 0.8rem; color: var(--gray-500); margin: 0 0 10px 40px; line-height: 1.4; }
+
+    /* ─── Escala de estrellas ─── */
+    .star-scale {
+      display: flex; align-items: center; gap: 6px; margin: 0 0 10px 40px;
+      font-size: 0.75rem; color: var(--gray-400); flex-wrap: wrap;
+    }
+    .star-scale-item { display: flex; align-items: center; gap: 3px; }
+    .star-scale-item .s { color: var(--gold); font-size: 0.85rem; }
+    .star-scale-divider { color: var(--gray-200); margin: 0 2px; }
+
+    /* ─── Etiqueta dinámica de estrellas ─── */
+    .star-label {
+      margin: 6px 0 0 40px; font-size: 0.8rem; font-weight: 600; min-height: 20px;
+      transition: all 0.2s ease; color: var(--purple);
+    }
+
+    /* ─── Etiquetas NPS ─── */
+    .nps-labels {
+      display: flex; justify-content: space-between; margin: 6px 0 0;
+      font-size: 0.72rem; color: var(--gray-400);
+    }
+
+    .input-wrap { margin-left: 40px; }
+    input[type="text"], input[type="email"], select, textarea {
+      width: 100%; padding: 14px 16px; border: 2px solid var(--gray-200); border-radius: 10px;
+      background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--dark);
+      outline: none; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); line-height: 1.5;
+    }
+    textarea { resize: vertical; min-height: 100px; }
+    input:focus, select:focus, textarea:focus { border-color: var(--purple); background: #faf5ff; box-shadow: 0 0 0 4px rgba(112,48,160,0.08); }
+    input.has-value, select.has-value, textarea.has-value { border-color: rgba(28,137,175,0.35); }
+
+    .rating-group { display: flex; gap: 8px; }
+    .star-btn {
+      background: none; border: none; font-size: 2.2rem; color: var(--gray-200); cursor: pointer;
+      transition: all 0.2s; outline: none; -webkit-tap-highlight-color: transparent; padding: 0 4px;
+    }
+    .star-btn:hover { transform: scale(1.1); }
+    .star-btn.active { color: var(--gold); text-shadow: 0 2px 10px rgba(245,158,11,0.3); }
+
+    .nps-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nps-btn {
+      width: 42px; height: 42px; border-radius: 8px; border: 2px solid var(--gray-200); background: #fff;
+      font-size: 1rem; font-weight: 700; color: var(--gray-500); cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace;
+    }
+    .nps-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .nps-btn.active { background: linear-gradient(135deg, var(--blue), var(--purple)); color: #fff; border-color: transparent; box-shadow: 0 4px 10px rgba(112,48,160,0.2); }
+
+    .nav-bar { padding: 16px 28px 26px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .btn-prev, .btn-next, .btn-submit { padding: 12px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.25s; font-family: inherit; }
+    .btn-prev { border: 2px solid var(--gray-200); background: #fff; color: var(--gray-500); }
+    .btn-prev:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); }
+    .btn-prev:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-next { border: none; color: #fff; background: linear-gradient(135deg, var(--purple), var(--blue)); box-shadow: 0 4px 15px rgba(112,48,160,0.25); }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(112,48,160,0.35); }
+    .btn-submit { border: none; color: #fff; background: linear-gradient(135deg, var(--green), #0d9488); box-shadow: 0 4px 15px rgba(5,150,105,0.3); }
+    .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(5,150,105,0.4); }
+    .btn-submit:disabled { background: linear-gradient(135deg, var(--gray-400), #cbd5e1); box-shadow: none; cursor: not-allowed; }
+    .nav-counter { font-size: 0.75rem; color: var(--gray-400); font-family: 'Space Mono', monospace; }
+
+    .footer { text-align: center; padding: 26px 20px 40px; color: var(--gray-400); font-size: 0.82rem; }
+    .footer .accent-purple { color: var(--purple); font-weight: 700; }
+    .footer .accent-blue { color: var(--blue); font-weight: 700; }
+
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100; background: rgba(10,10,30,0.7); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; animation: fadeIn 0.3s ease;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 16px; padding: 44px 32px; max-width: 420px; width: 90%; text-align: center;
+      animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 25px 60px rgba(0,0,0,0.25); border-top: 5px solid var(--purple);
+    }
+    .modal-icon {
+      width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 18px; background: linear-gradient(135deg, var(--purple), var(--blue));
+      display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff;
+    }
+    .modal-box h3 { color: var(--dark); margin-bottom: 10px; font-size: 1.25rem; }
+    .modal-box p { color: var(--gray-500); font-size: 0.92rem; line-height: 1.6; margin-bottom: 26px; }
+    .modal-btn {
+      background: linear-gradient(135deg, var(--purple), var(--blue)); color: #fff; border: none; padding: 14px 30px; border-radius: 10px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit; box-shadow: 0 4px 15px rgba(112,48,160,0.3); transition: all 0.25s;
+    }
+    .modal-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(112,48,160,0.4); }
+
+    .error-bar {
+      display: none; padding: 14px 20px; margin: 16px 28px; border-radius: 10px; text-align: center; font-weight: 600;
+      background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; font-size: 0.88rem;
+    }
+    .error-bar.show { display: block; }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 600px) {
+      .step-btn-label { display: none; }
+      .step-btn { padding: 7px 10px; }
+      .section-header, .fields-area, .nav-bar { padding-left: 18px; padding-right: 18px; }
+      .input-wrap, .hint, .star-scale, .star-label { margin-left: 0; }
+      .nps-btn { width: 36px; height: 36px; font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid-bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="logo-row">
+        <img class="logo-img" src="https://i.ibb.co/Z1VMrwZj/Somos-Zeta-Exportar-Mesa-de-trabajo-1-copia-3.png" alt="Somos Zeta">
+      </div>
+      <h1>Evaluación de <span class="gradient-text">Formación IA</span></h1>
+      <p class="subtitle">Completá esta breve encuesta para ayudarnos a mejorar nuestros cursos</p>
+    </div>
+
+    <div class="alert-box">
+      <span class="alert-icon">🎓</span>
+      <div>
+        <strong>¡Importante antes de empezar!</strong>
+        Revisá cuidadosamente que tu Nombre y tu Correo Electrónico estén bien escritos. Al finalizar esta evaluación, el sistema te enviará automáticamente a ese correo tu certificado oficial de finalización.
+      </div>
+    </div>
+
+    <div class="progress-wrapper">
+      <div class="progress-top">
+        <span class="progress-label">Progreso general</span>
+        <span class="progress-pct" id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="step-nav" id="stepNav"></div>
+    </div>
+
+    <div class="form-card">
+      <div class="section-header">
+        <div class="section-tag" id="sectionTag"></div>
+        <h2 id="sectionTitle"></h2>
+        <p class="section-sub" id="sectionSub"></p>
+      </div>
+      <div class="fields-area" id="fieldsArea"></div>
+      <div class="error-bar" id="errorBar"></div>
+      <div class="nav-bar">
+        <button class="btn-prev" id="btnPrev" onclick="prevStep()">← Anterior</button>
+        <span class="nav-counter" id="navCounter"></span>
+        <button class="btn-next" id="btnNext" onclick="nextStep()">Siguiente →</button>
+        <button class="btn-submit" id="btnSubmit" onclick="submitForm()" style="display:none">Enviar Evaluación ✓</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span style="font-weight:600">Tecnología que </span><span class="accent-purple">ACERCA</span>
+      <span style="font-weight:600"> · Soluciones que </span><span class="accent-blue">TRANSFORMAN</span>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="successModal" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-icon">✓</div>
+      <h3>¡Evaluación enviada!</h3>
+      <p>Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado de finalización al correo que indicaste.</p>
+      <button class="modal-btn" onclick="closeModal()">Cerrar ventana</button>
+    </div>
+  </div>
+
+<script>
+// =========================================================================
+// Pegá la URL de Google Apps Script entre las comillas simples de abajo.
+// =========================================================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHg-xxwCfnIsAR9tH63_vGGTNlgdg9WRicIEu0Ss7Ei7j-N7DmihK6aFV4w4KZxvsz/exec';
+// =========================================================================
+
+const STAR_LABELS = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
+
+const EMPRESAS = [
+  "CEVA Salud Animal", "Yeruvá S.A.", "Nutriar S.A.", "Steffen y Asociados",
+  "Gerenciar S.R.L.", "Thorbell S.R.L.", "Asociación de Oftalmólogos de Sta Fe",
+  "Asociación de Médicos Veterinarios de Sta Fe", "Colegio de Ingenieros Especialistas de Sta Fe",
+  "Mercurio Pinturerias", "Las Heras S.A.", "Vicen Agro S.R.L", "Aceitera Colibrí",
+  "Agropecuaria Las Marías", "ITEC EI Molino", "Contadores David",
+  "CEVA Salud Animal (PETs)", "CEVA Salud Animal (Rumiantes)", "Ortopedia Kinnen",
+  "Primo y Cía. S.A.", "ANCA S.R.L.", "Empresa Provincial de la Energía (EPE)", "Vetacord S.A.", "Otra"
+];
+
+const SECTIONS = [
+  {
+    id: "datos", label: "Datos", icon: "◉",
+    title: "Tus Datos",
+    subtitle: "Completá tal como querés que figure en tu certificado",
+    fields: [
+      {
+        name: "nombre", label: "Nombre y Apellido", type: "text",
+        hint: "Escribí tu nombre completo tal como querés que aparezca en tu certificado. Ej: María González"
+      },
+      {
+        name: "correo", label: "Correo electrónico", type: "email",
+        hint: "Acá te enviamos el certificado. Revisá bien que no haya errores de tipeo. Ej: maria.gonzalez@empresa.com"
+      },
+      {
+        name: "empresa", label: "Empresa / Institución", type: "select",
+        hint: "Seleccioná la organización donde trabajás o estás haciendo la formación.",
+        options: EMPRESAS
+      }
+    ]
+  },
+  {
+    id: "calidad", label: "Calidad", icon: "★",
+    title: "Valoración del Taller",
+    subtitle: "Hacé clic en las estrellas para calificar cada aspecto. 1 estrella = Muy malo · 5 estrellas = Excelente",
+    fields: [
+      {
+        name: "exp_general", label: "¿Cómo calificarías tu experiencia general en la formación?", num: "01", type: "rating",
+        hint: "Pensá en toda la jornada: desde que llegaste hasta el cierre. ¿Cómo te fuiste?"
+      },
+      {
+        name: "expectativas", label: "Pensando en tus expectativas previas, ¿la formación...?", num: "02", type: "select",
+        hint: "¿Cuándo te anotaste, qué esperabas aprender o lograr? ¿Eso se cumplió?",
+        options: ["Las superó ampliamente", "Las cumplió", "No las alcanzó"]
+      },
+      {
+        name: "claridad", label: "Claridad del/los docente/s", num: "03", type: "rating",
+        hint: "¿Pudiste seguir las explicaciones sin dificultad? ¿Los ejemplos y las analogías fueron claros?"
+      },
+      {
+        name: "material", label: "Calidad del material de apoyo (presentaciones, recursos)", num: "04", type: "rating",
+        hint: "Evaluá las diapositivas, guías, recursos digitales y cualquier material que hayas recibido."
+      },
+      {
+        name: "relevancia", label: "Relevancia y utilidad de los contenidos", num: "05", type: "rating",
+        hint: "¿Lo aprendido se puede aplicar en tu trabajo diario? ¿Los temas fueron pertinentes para tu contexto?"
+      },
+      {
+        name: "ejemplos", label: "Ejemplos prácticos y dinámicas", num: "06", type: "rating",
+        hint: "¿Las actividades prácticas, ejercicios y casos reales te ayudaron a entender mejor los conceptos?"
+      },
+      {
+        name: "ritmo", label: "Duración y ritmo de la formación", num: "07", type: "rating",
+        hint: "¿El tiempo alcanzó para ver todo el contenido? ¿El ritmo fue cómodo para seguir sin perderte?"
+      }
+    ]
+  },
+  {
+    id: "aplicacion", label: "Aplicación", icon: "◆",
+    title: "Impacto Práctico",
+    subtitle: "Queremos saber qué te llevás a tu rutina de trabajo. No hay respuestas correctas o incorrectas.",
+    fields: [
+      {
+        name: "destacar", label: "Si tuvieras que destacar una sola cosa que te gustó, ¿qué sería?", num: "08", type: "textarea",
+        hint: "Puede ser un ejercicio, un concepto, una herramienta, una explicación, o incluso el clima del grupo.",
+        placeholder: "Ej: La parte donde probamos automatizaciones con Make fue muy práctica y fácil de entender desde el primer momento."
+      },
+      {
+        name: "areas", label: "¿En qué áreas de tu trabajo o proyecto creés que podrás aplicar lo aprendido?", num: "09", type: "textarea",
+        hint: "Pensá en tus tareas diarias: ¿dónde podrías usar IA o automatizaciones para ganar tiempo o mejorar resultados?",
+        placeholder: "Ej: En la redacción de informes para clientes, en la preparación de presupuestos y en la atención al cliente por WhatsApp."
+      },
+      {
+        name: "herramientas", label: "De las herramientas y conceptos vistos, ¿cuáles te resultaron más útiles?", num: "10", type: "textarea",
+        hint: "Mencioná las herramientas (ChatGPT, Claude, Gemini, Make, etc.) o los conceptos que más te llamaron la atención.",
+        placeholder: "Ej: Claude para redactar textos, los prompts estructurados y la idea de usar IA para resumir reuniones."
+      },
+      {
+        name: "ejemplo_imp", label: "¿Te animás a dejarnos un ejemplo de cómo lo implementarías?", num: "11", type: "textarea",
+        hint: "Describí un caso concreto y real de tu trabajo donde podrías aplicar algo de lo que aprendiste hoy.",
+        placeholder: "Ej: Voy a configurar un asistente de IA con Gemini para que me resuma los correos importantes cada mañana antes de empezar a trabajar."
+      }
+    ]
+  },
+  {
+    id: "cierre", label: "Cierre", icon: "▲",
+    title: "Feedback Final",
+    subtitle: "Tu opinión nos ayuda a mejorar cada edición del programa.",
+    fields: [
+      {
+        name: "nps", label: "En una escala de 0 a 10, ¿qué tan probable es que recomiendes esta formación?", num: "12", type: "nps",
+        hint: "0 = No lo recomendaría para nada · 10 = Lo recomendaría con total certeza a cualquier colega o conocido."
+      },
+      {
+        name: "motivo", label: "¿Cuál es el motivo principal de tu puntuación anterior?", num: "13", type: "textarea",
+        hint: "Contanos qué fue lo que más influyó en tu puntuación, ya sea positivo o algo que mejorarías.",
+        placeholder: "Ej: Le daría un 9 porque los contenidos son muy prácticos y se pueden aplicar desde el día uno, aunque me hubiera gustado más tiempo para practicar."
+      },
+      {
+        name: "indecisos", label: "¿Qué le dirías a alguien que está dudando en inscribirse?", num: "14", type: "textarea",
+        hint: "Pensá en un compañero de trabajo o colega que todavía no sabe si la IA es para él o ella. ¿Qué le recomendarías?",
+        placeholder: "Ej: Que no se preocupe si no tiene experiencia técnica. El taller está diseñado para todos los niveles y salís con cosas concretas para aplicar."
+      },
+      {
+        name: "comentarios", label: "¿Algún otro comentario, sugerencia o consejo de mejora?", num: "15", type: "textarea",
+        hint: "Este es el espacio libre. Todo feedback es bienvenido: temas que agregarías, cosas que sacarías, logística, horarios, etc.",
+        placeholder: "Ej: Estaría bueno que la próxima edición incluya un módulo sobre cómo usar IA para análisis de datos en Excel."
+      }
+    ]
+  }
+];
+
+let currentStep = 0;
+const formData = {};
+
+window.addEventListener('DOMContentLoaded', () => {
+  createParticles(); renderStepNav(); renderStep();
+});
+
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div'); el.className = 'particle';
+    const size = 3 + (i % 4) * 2;
+    el.style.cssText = `left: ${8 + (i * 7.5) % 85}%; top: ${5 + (i * 13) % 80}%; width: ${size}px; height: ${size}px; background: linear-gradient(135deg, ${i % 2 === 0 ? '#7030a0, #1c89af' : '#1c89af, #7030a0'}); --dur: ${8 + (i % 5) * 3}s; --delay: ${i * 0.7}s;`;
+    container.appendChild(el);
+  }
+}
+
+function renderStepNav() {
+  document.getElementById('stepNav').innerHTML = SECTIONS.map((s, i) => `
+    <button class="step-btn" id="stepBtn${i}" onclick="goToStep(${i})">
+      <span class="step-badge" id="stepBadge${i}">${s.icon}</span><span class="step-btn-label">${s.label}</span>
+    </button>`).join('');
+}
+
+function updateStepNav() {
+  SECTIONS.forEach((s, i) => {
+    const btn = document.getElementById(`stepBtn${i}`);
+    const badge = document.getElementById(`stepBadge${i}`);
+    const filled = s.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length;
+    const done = filled === s.fields.length;
+    btn.className = 'step-btn' + (i === currentStep ? ' active' : '') + (done ? ' done' : '');
+    badge.innerHTML = done ? '✓' : s.icon;
+  });
+}
+
+function updateProgress() {
+  const total = SECTIONS.reduce((a, s) => a + s.fields.length, 0);
+  const filled = SECTIONS.reduce((a, s) => a + s.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length, 0);
+  const pct = Math.round((filled / total) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  const sec = SECTIONS[currentStep];
+  const secFilled = sec.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length;
+  document.getElementById('navCounter').textContent = secFilled + '/' + sec.fields.length + ' completados';
+}
+
+function renderStep() {
+  const sec = SECTIONS[currentStep];
+  document.getElementById('sectionTag').textContent = sec.icon + ' Sección ' + (currentStep + 1) + ' de ' + SECTIONS.length;
+  document.getElementById('sectionTitle').textContent = sec.title;
+  document.getElementById('sectionSub').textContent = sec.subtitle || '';
+  document.getElementById('sectionSub').style.display = sec.subtitle ? 'block' : 'none';
+
+  let html = '';
+  sec.fields.forEach(f => {
+    const val = formData[f.name] ?? '';
+    const hasVal = String(val).trim() !== '';
+    html += `<div class="form-group">`;
+
+    if (f.num) {
+      html += `<div class="label-row"><span class="q-badge${hasVal ? ' filled' : ''}" id="badge_${f.name}">${f.num}</span><label for="input_${f.name}">${f.label}</label></div>`;
+    } else {
+      html += `<div class="label-row"><label for="input_${f.name}">${f.label}</label></div>`;
+    }
+    if (f.hint) html += `<p class="hint">${f.hint}</p>`;
+
+    html += `<div class="input-wrap">`;
+    const inputClass = hasVal ? ' has-value' : '';
+
+    if (f.type === 'textarea') {
+      const ph = f.placeholder || 'Escribí tu respuesta acá...';
+      html += `<textarea id="input_${f.name}" class="${inputClass}" oninput="onInput('${f.name}', this.value)" placeholder="${escapeHtml(ph)}">${escapeHtml(String(val))}</textarea>`;
+
+    } else if (f.type === 'select') {
+      html += `<select id="input_${f.name}" class="${inputClass}" onchange="onInput('${f.name}', this.value)">
+                <option value="" disabled ${!hasVal ? 'selected' : ''}>Desplegá para elegir una opción...</option>`;
+      f.options.forEach(opt => { html += `<option value="${escapeHtml(opt)}" ${val === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`; });
+      html += `</select>`;
+
+    } else if (f.type === 'rating') {
+      // Escala orientativa
+      html += `<div class="star-scale">
+        <span class="star-scale-item"><span class="s">★</span> Muy malo</span>
+        <span class="star-scale-divider">·</span>
+        <span class="star-scale-item"><span class="s">★★★</span> Regular</span>
+        <span class="star-scale-divider">·</span>
+        <span class="star-scale-item"><span class="s">★★★★★</span> Excelente</span>
+      </div>`;
+      html += `<div class="rating-group" id="rating_${f.name}">`;
+      [1, 2, 3, 4, 5].forEach(i => {
+        html += `<button type="button" class="star-btn ${Number(val) >= i ? 'active' : ''}" onclick="setVisualValue('${f.name}', ${i}, 'rating')">★</button>`;
+      });
+      html += `</div>`;
+      // Etiqueta dinámica
+      const labelText = hasVal ? STAR_LABELS[Number(val)] : '';
+      html += `<div class="star-label" id="starlabel_${f.name}">${labelText}</div>`;
+
+    } else if (f.type === 'nps') {
+      html += `<div class="nps-group" id="nps_${f.name}">`;
+      [0,1,2,3,4,5,6,7,8,9,10].forEach(i => {
+        const isActive = hasVal && Number(val) === i;
+        html += `<button type="button" class="nps-btn${isActive ? ' active' : ''}" onclick="setVisualValue('${f.name}', ${i}, 'nps')">${i}</button>`;
+      });
+      html += `</div>`;
+      html += `<div class="nps-labels"><span>0 = No lo recomendaría</span><span>10 = Lo recomendaría sin dudarlo</span></div>`;
+
+    } else {
+      html += `<input type="${f.type}" id="input_${f.name}" class="${inputClass}" value="${escapeHtml(String(val))}" oninput="onInput('${f.name}', this.value)">`;
+    }
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('fieldsArea').innerHTML = html;
+
+  document.getElementById('btnPrev').disabled = currentStep === 0;
+  const isLast = currentStep === SECTIONS.length - 1;
+  document.getElementById('btnNext').style.display = isLast ? 'none' : '';
+  document.getElementById('btnSubmit').style.display = isLast ? '' : 'none';
+  if (isLast) checkSubmitState();
+  document.getElementById('errorBar').className = 'error-bar';
+  updateStepNav(); updateProgress();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function onInput(name, value) {
+  formData[name] = value;
+  const el = document.getElementById('input_' + name);
+  if (el) el.className = String(value).trim() !== '' ? 'has-value' : '';
+  updateBadgeAndNav(name);
+}
+
+function setVisualValue(name, value, type) {
+  formData[name] = value;
+
+  if (type === 'rating') {
+    const container = document.getElementById('rating_' + name);
+    if (container) {
+      Array.from(container.children).forEach((btn, i) => {
+        btn.className = 'star-btn' + (i < value ? ' active' : '');
+      });
+    }
+    // Actualizar etiqueta dinámica
+    const labelEl = document.getElementById('starlabel_' + name);
+    if (labelEl) labelEl.textContent = STAR_LABELS[value] || '';
+
+  } else if (type === 'nps') {
+    const container = document.getElementById('nps_' + name);
+    if (container) {
+      Array.from(container.children).forEach((btn, i) => {
+        btn.className = 'nps-btn' + (i === value ? ' active' : '');
+      });
+    }
+  }
+
+  updateBadgeAndNav(name);
+}
+
+function updateBadgeAndNav(name) {
+  const hasVal = String(formData[name] ?? '').trim() !== '';
+  const badge = document.getElementById('badge_' + name);
+  if (badge) badge.className = 'q-badge' + (hasVal ? ' filled' : '');
+  updateProgress(); updateStepNav();
+  if (currentStep === SECTIONS.length - 1) checkSubmitState();
+}
+
+function goToStep(idx) {
+  if (idx !== currentStep) {
+    currentStep = idx;
+    renderStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+function nextStep() { if (currentStep < SECTIONS.length - 1) goToStep(currentStep + 1); }
+function prevStep() { if (currentStep > 0) goToStep(currentStep - 1); }
+
+function checkSubmitState() {
+  const allFilled = SECTIONS.every(s => s.fields.every(f => String(formData[f.name] ?? '').trim() !== ''));
+  document.getElementById('btnSubmit').disabled = !allFilled;
+}
+
+function submitForm() {
+  const allFilled = SECTIONS.every(s => s.fields.every(f => String(formData[f.name] ?? '').trim() !== ''));
+  if (!allFilled) return;
+
+  const btn = document.getElementById('btnSubmit');
+  const errBar = document.getElementById('errorBar');
+  btn.innerHTML = '<span class="spinner"></span>Enviando y generando certificado...';
+  btn.disabled = true;
+  errBar.className = 'error-bar';
+
+  fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(formData) })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        btn.innerHTML = 'Enviar Evaluación ✓';
+        btn.disabled = false;
+        Object.keys(formData).forEach(k => delete formData[k]);
+        currentStep = 0;
+        renderStep();
+        document.getElementById('successModal').classList.add('show');
+      } else {
+        throw new Error(data.message);
+      }
+    })
+    .catch((err) => {
+      btn.innerHTML = 'Enviar Evaluación ✓';
+      btn.disabled = false;
+      errBar.textContent = 'Hubo un error de conexión con la base de datos. Avisanos directo por WhatsApp.';
+      errBar.className = 'error-bar show';
+      console.error("Error de Fetch:", err);
+    });
+}
+
+function closeModal() { document.getElementById('successModal').classList.remove('show'); }
+</script>
+</body>
+</html>
