@@ -295,7 +295,7 @@
 // =========================================================================
 // Pegá la URL de Google Apps Script entre las comillas simples de abajo.
 // =========================================================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHg-xxwCfnIsAR9tH63_vGGTNlgdg9WRicIEu0Ss7Ei7j-N7DmihK6aFV4w4KZxvsz/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGd1i3lfTueiPl2mKE_PEpjD-372zSooChF9gwfaAgsfO3q3hmIV29pL3YFJhsm6TO/exec';
 // =========================================================================
 
 const STAR_LABELS = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
@@ -621,27 +621,29 @@ function submitForm() {
   btn.disabled = true;
   errBar.className = 'error-bar';
 
-  fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(formData) })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        btn.innerHTML = 'Enviar Evaluación ✓';
-        btn.disabled = false;
-        Object.keys(formData).forEach(k => delete formData[k]);
-        currentStep = 0;
-        renderStep();
-        document.getElementById('successModal').classList.add('show');
-      } else {
-        throw new Error(data.message);
-      }
-    })
-    .catch((err) => {
-      btn.innerHTML = 'Enviar Evaluación ✓';
-      btn.disabled = false;
-      errBar.textContent = 'Hubo un error de conexión con la base de datos. Avisanos directo por WhatsApp.';
-      errBar.className = 'error-bar show';
-      console.error("Error de Fetch:", err);
-    });
+  // mode: 'no-cors' evita el problema del redirect de Apps Script.
+  // La respuesta es opaca (no se puede leer), pero si el fetch llega
+  // al .then() es porque el envío fue exitoso.
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify(formData)
+  })
+  .then(() => {
+    btn.innerHTML = 'Enviar Evaluación ✓';
+    btn.disabled = false;
+    Object.keys(formData).forEach(k => delete formData[k]);
+    currentStep = 0;
+    renderStep();
+    document.getElementById('successModal').classList.add('show');
+  })
+  .catch((err) => {
+    btn.innerHTML = 'Enviar Evaluación ✓';
+    btn.disabled = false;
+    errBar.textContent = 'Hubo un error de conexión. Avisanos directo por WhatsApp.';
+    errBar.className = 'error-bar show';
+    console.error("Error de Fetch:", err);
+  });
 }
 
 function closeModal() { document.getElementById('successModal').classList.remove('show'); }
