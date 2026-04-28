@@ -502,7 +502,6 @@ function renderStep() {
       html += `</select>`;
 
     } else if (f.type === 'rating') {
-      // Escala orientativa
       html += `<div class="star-scale">
         <span class="star-scale-item"><span class="s">★</span> Muy malo</span>
         <span class="star-scale-divider">·</span>
@@ -515,7 +514,6 @@ function renderStep() {
         html += `<button type="button" class="star-btn ${Number(val) >= i ? 'active' : ''}" onclick="setVisualValue('${f.name}', ${i}, 'rating')">★</button>`;
       });
       html += `</div>`;
-      // Etiqueta dinámica
       const labelText = hasVal ? STAR_LABELS[Number(val)] : '';
       html += `<div class="star-label" id="starlabel_${f.name}">${labelText}</div>`;
 
@@ -572,7 +570,6 @@ function setVisualValue(name, value, type) {
         btn.className = 'star-btn' + (i < value ? ' active' : '');
       });
     }
-    // Actualizar etiqueta dinámica
     const labelEl = document.getElementById('starlabel_' + name);
     if (labelEl) labelEl.textContent = STAR_LABELS[value] || '';
 
@@ -598,7 +595,6 @@ function updateBadgeAndNav(name) {
 
 function goToStep(idx) {
   if (idx !== currentStep) {
-    // LEO: ACÁ ESTÁ LA LÓGICA DE BLOQUEO DE SECCIÓN
     if (idx > currentStep) {
       const sec = SECTIONS[currentStep];
       const allFilled = sec.fields.every(f => String(formData[f.name] ?? '').trim() !== '');
@@ -607,7 +603,7 @@ function goToStep(idx) {
         errBar.textContent = 'Por favor, completá todas las preguntas de esta página para avanzar.';
         errBar.className = 'error-bar show';
         setTimeout(() => errBar.className = 'error-bar', 3000);
-        return; // Esto frena el avance
+        return; 
       }
     }
 
@@ -630,9 +626,13 @@ function submitForm() {
 
   const btn = document.getElementById('btnSubmit');
   const errBar = document.getElementById('errorBar');
+  
   btn.innerHTML = '<span class="spinner"></span>Enviando y generando certificado...';
   btn.disabled = true;
   errBar.className = 'error-bar';
+
+  // Guardamos el mail antes de vaciar el formulario
+  const emailEnviado = formData.correo;
 
   fetch(SCRIPT_URL, {
     method: 'POST',
@@ -640,27 +640,25 @@ function submitForm() {
     body: JSON.stringify(formData)
   })
   .then(() => {
-    // LEO: ACÁ CAPTURAMOS EL EMAIL ANTES DE BORRAR LA DATA Y LO PONEMOS EN EL CARTEL
-    const emailEnviado = formData.correo;
-
     btn.innerHTML = 'Enviar Evaluación ✓';
     btn.disabled = false;
     
-    // Inyecta el email y la aclaración en el modal
     const modalMessage = document.getElementById('modalMessage');
     modalMessage.innerHTML = `Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado a:<br><strong style="color: var(--purple); font-size: 1.05rem; display: block; margin: 12px 0;">${escapeHtml(emailEnviado)}</strong><small style="color: var(--gray-500); line-height: 1.4; display: block;">Recordá que para que el sistema funcione correctamente y cruce los datos, este debe ser el mismo correo al que te llegó la invitación inicial.</small>`;
 
     Object.keys(formData).forEach(k => delete formData[k]);
     currentStep = 0;
     renderStep();
+    
     document.getElementById('successModal').classList.add('show');
   })
   .catch((err) => {
     btn.innerHTML = 'Enviar Evaluación ✓';
     btn.disabled = false;
-    errBar.textContent = 'Hubo un error de conexión. Avisanos directo por WhatsApp.';
+    
+    errBar.innerHTML = `Hubo un error en el proceso: <strong>${err.message || 'Falla de red'}</strong>. Apretá F12 y revisá la pestaña "Consola".`;
     errBar.className = 'error-bar show';
-    console.error("Error de Fetch:", err);
+    console.error("Error capturado por Vale:", err);
   });
 }
 
