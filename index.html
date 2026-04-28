@@ -286,7 +286,7 @@
     <div class="modal-box" onclick="event.stopPropagation()">
       <div class="modal-icon">✓</div>
       <h3>¡Evaluación enviada!</h3>
-      <p>Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado de finalización al correo que indicaste.</p>
+      <p id="modalMessage">Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado de finalización al correo que indicaste.</p>
       <button class="modal-btn" onclick="closeModal()">Cerrar ventana</button>
     </div>
   </div>
@@ -598,6 +598,19 @@ function updateBadgeAndNav(name) {
 
 function goToStep(idx) {
   if (idx !== currentStep) {
+    // LEO: ACÁ ESTÁ LA LÓGICA DE BLOQUEO DE SECCIÓN
+    if (idx > currentStep) {
+      const sec = SECTIONS[currentStep];
+      const allFilled = sec.fields.every(f => String(formData[f.name] ?? '').trim() !== '');
+      if (!allFilled) {
+        const errBar = document.getElementById('errorBar');
+        errBar.textContent = 'Por favor, completá todas las preguntas de esta página para avanzar.';
+        errBar.className = 'error-bar show';
+        setTimeout(() => errBar.className = 'error-bar', 3000);
+        return; // Esto frena el avance
+      }
+    }
+
     currentStep = idx;
     renderStep();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -621,17 +634,22 @@ function submitForm() {
   btn.disabled = true;
   errBar.className = 'error-bar';
 
-  // mode: 'no-cors' evita el problema del redirect de Apps Script.
-  // La respuesta es opaca (no se puede leer), pero si el fetch llega
-  // al .then() es porque el envío fue exitoso.
   fetch(SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
     body: JSON.stringify(formData)
   })
   .then(() => {
+    // LEO: ACÁ CAPTURAMOS EL EMAIL ANTES DE BORRAR LA DATA Y LO PONEMOS EN EL CARTEL
+    const emailEnviado = formData.correo;
+
     btn.innerHTML = 'Enviar Evaluación ✓';
     btn.disabled = false;
+    
+    // Inyecta el email y la aclaración en el modal
+    const modalMessage = document.getElementById('modalMessage');
+    modalMessage.innerHTML = `Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado a:<br><strong style="color: var(--purple); font-size: 1.05rem; display: block; margin: 12px 0;">${escapeHtml(emailEnviado)}</strong><small style="color: var(--gray-500); line-height: 1.4; display: block;">Recordá que para que el sistema funcione correctamente y cruce los datos, este debe ser el mismo correo al que te llegó la invitación inicial.</small>`;
+
     Object.keys(formData).forEach(k => delete formData[k]);
     currentStep = 0;
     renderStep();
