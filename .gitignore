@@ -1,0 +1,3 @@
+# Lo genera clasp al clonar y lleva el id del proyecto de Apps Script.
+# El repo es público, así que no lo versionamos: ver apps-script/README.md.
+apps-script/.clasp.json
