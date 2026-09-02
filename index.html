@@ -212,6 +212,9 @@
       background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; font-size: 0.88rem;
     }
     .error-bar.show { display: block; }
+    .error-bar { line-height: 1.5; }
+    .error-bar a { color: inherit; }
+    .error-bar.aviso { background: #fffbeb; color: #92400e; border-color: #fde68a; }
     .spinner {
       display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
       border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px;
@@ -1107,7 +1110,7 @@ function enviarAhora() {
 
   const btn = document.getElementById('btnSubmit');
   const errBar = document.getElementById('errorBar');
-  
+
   btn.innerHTML = '<span class="spinner"></span>Enviando y generando certificado...';
   btn.disabled = true;
   errBar.className = 'error-bar';
@@ -1115,32 +1118,76 @@ function enviarAhora() {
   // Guardamos el mail antes de vaciar el formulario
   const emailEnviado = formData.correo;
 
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(formData)
-  })
-  .then(() => {
+  function fallo(html, tipo) {
     btn.innerHTML = 'Enviar Evaluación ✓';
     btn.disabled = false;
-    
+    errBar.innerHTML = html;
+    errBar.className = 'error-bar show' + (tipo ? ' ' + tipo : '');
+    errBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // No borramos el borrador: las respuestas quedan para reintentar.
+    guardarBorrador();
+  }
+
+  // Sin 'no-cors' podemos leer la respuesta del Apps Script y saber si el
+  // certificado salió de verdad. Con 'no-cors' la respuesta es opaca y
+  // cualquier fallo del backend se veía como un envío exitoso.
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(formData)
+  })
+  .then(resp => resp.text())
+  .then(texto => {
+    let data;
+    try { data = JSON.parse(texto); } catch (e) { data = null; }
+
+    // El certificado ya se habia emitido antes: no es un error, no hay nada que reintentar.
+    if (data && data.status === 'already') {
+      fallo(escapeHtml(data.message || 'Ya te habiamos enviado el certificado a esta direccion.')
+          + '<br><small style="font-weight:500">Tus respuestas ya habian quedado registradas.</small>', 'aviso');
+      borrarBorrador();
+      return;
+    }
+
+    if (!data || data.status !== 'success') {
+      const motivo = data && data.message ? data.message : '';
+
+      if (/no encontrado/i.test(motivo)) {
+        fallo('No encontramos <strong>' + escapeHtml(emailEnviado) + '</strong> en la lista de la formación, '
+            + 'así que todavía no pudimos emitir tu certificado.<br>'
+            + 'Usá el mismo correo al que te llegó la invitación. '
+            + 'Si es ese y sigue sin funcionar, escribinos a '
+            + '<a href="mailto:formacion@somos-zeta.com?subject=No%20puedo%20recibir%20mi%20certificado" style="color:#991b1b;font-weight:700">formacion@somos-zeta.com</a> '
+            + 'y lo resolvemos a mano. Tus respuestas quedaron guardadas acá.', 'aviso');
+        return;
+      }
+
+      fallo('No pudimos generar tu certificado' + (motivo ? ': <strong>' + escapeHtml(motivo) + '</strong>' : '.')
+          + '<br>Tus respuestas quedaron guardadas. Probá de nuevo en un rato o escribinos a '
+          + '<a href="mailto:formacion@somos-zeta.com?subject=Error%20al%20enviar%20la%20evaluacion" style="color:#991b1b;font-weight:700">formacion@somos-zeta.com</a>.');
+      return;
+    }
+
+    // Éxito confirmado por el backend.
+    btn.innerHTML = 'Enviar Evaluación ✓';
+    btn.disabled = false;
+
     const modalMessage = document.getElementById('modalMessage');
-    modalMessage.innerHTML = `Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado a:<br><strong style="color: var(--purple); font-size: 1.05rem; display: block; margin: 12px 0;">${escapeHtml(emailEnviado)}</strong><small style="color: var(--gray-500); line-height: 1.4; display: block;">Recordá que para que el sistema funcione correctamente y cruce los datos, este debe ser el mismo correo al que te llegó la invitación inicial.</small>`;
+    modalMessage.innerHTML = 'Muchas gracias por tu tiempo y feedback. Acabamos de enviarte tu certificado a:'
+      + '<br><strong style="color: var(--purple); font-size: 1.05rem; display: block; margin: 12px 0;">' + escapeHtml(emailEnviado) + '</strong>'
+      + '<small style="color: var(--gray-500); line-height: 1.4; display: block;">Si no lo ves en unos minutos, revisá la carpeta de correo no deseado.</small>';
 
     borrarBorrador();
     Object.keys(formData).forEach(k => delete formData[k]);
     currentStep = 0;
     renderStep();
-    
+
     document.getElementById('successModal').classList.add('show');
   })
-  .catch((err) => {
-    btn.innerHTML = 'Enviar Evaluación ✓';
-    btn.disabled = false;
-    
-    errBar.innerHTML = `Hubo un error en el proceso: <strong>${err.message || 'Falla de red'}</strong>. Apretá F12 y revisá la pestaña "Consola".`;
-    errBar.className = 'error-bar show';
-    console.error("Error capturado por Vale:", err);
+  .catch(err => {
+    fallo('No pudimos conectarnos con el servidor. Revisá tu conexión y probá de nuevo: '
+        + 'tus respuestas quedaron guardadas en este dispositivo.<br>'
+        + '<small style="font-weight:500">Detalle técnico: ' + escapeHtml(err.message || 'falla de red') + '</small>');
+    console.error('Error al enviar la evaluación:', err);
   });
 }
 
