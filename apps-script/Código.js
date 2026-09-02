@@ -118,6 +118,44 @@ function enviarInvitaciones() {
 }
 
 /**
+ * CONSULTA: el formulario pregunta, por correo, a qué inscripción corresponde
+ * la persona. Devuelve la empresa y la formación que están cargadas en la
+ * planilla, para mostrarlas como dato fijo en vez de dejar elegir.
+ *
+ * Solo responde con coincidencia exacta de correo y solo devuelve nombre,
+ * empresa y formación: nunca la lista completa ni las respuestas de nadie.
+ */
+function doGet(e) {
+  try {
+    const correoBuscado = normalizarMail(e && e.parameter ? e.parameter.correo : '');
+    if (!correoBuscado) {
+      return jsonOut({ status: 'error', code: 'SIN_CORREO', message: 'Falta el correo.' });
+    }
+
+    const hoja = getHojaParticipantes();
+    const datos = hoja.getDataRange().getValues();
+
+    for (let i = 1; i < datos.length; i++) {
+      const fila = datos[i];
+      if (normalizarMail(fila[COL.email - 1]) !== correoBuscado) continue;
+
+      return jsonOut({
+        status: 'ok',
+        nombre: String(fila[COL.nombre - 1] || ''),
+        empresa: String(fila[COL.empresa - 1] || ''),
+        formacion: String(fila[COL.formacion - 1] || ''),
+        yaEnviado: fila[COL.estado - 1] === ESTADO_ENVIADO
+      });
+    }
+
+    return jsonOut({ status: 'error', code: 'EMAIL_NO_ENCONTRADO', message: 'Email no encontrado' });
+  } catch (error) {
+    console.error('doGet falló: ' + (error && error.stack ? error.stack : error));
+    return jsonOut({ status: 'error', code: 'ERROR_INTERNO', message: 'Error interno' });
+  }
+}
+
+/**
  * WEBHOOK: Recibe el formulario, genera el certificado y envía el mail personalizado.
  *
  * Devuelve siempre un JSON con "status": success | already | error, y un "code"

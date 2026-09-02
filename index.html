@@ -235,35 +235,7 @@
       background: none; border: none; padding: 0; margin-left: 4px; cursor: pointer;
       font: inherit; font-weight: 700; color: var(--purple); text-decoration: underline;
     }
-    input.invalid, textarea.invalid, .combo-input.invalid { border-color: #fca5a5 !important; background: #fffafa; }
-
-    /* ─── Combobox de organización ─── */
-    .combo { position: relative; }
-    .combo-input { padding-right: 44px !important; }
-    .combo-toggle {
-      position: absolute; top: 0; right: 0; height: 100%; width: 40px;
-      background: none; border: none; cursor: pointer; color: var(--gray-400);
-      font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s ease;
-    }
-    .combo.open .combo-toggle { transform: rotate(180deg); color: var(--purple); }
-    .combo-list {
-      display: none; position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0;
-      max-height: 260px; overflow-y: auto; background: #fff; border: 2px solid var(--gray-200);
-      border-radius: 10px; box-shadow: 0 12px 30px rgba(10,10,30,0.12); padding: 6px;
-      overscroll-behavior: contain;
-    }
-    .combo.open .combo-list { display: block; }
-    .combo-opt {
-      padding: 10px 12px; border-radius: 7px; font-size: 0.9rem; cursor: pointer;
-      line-height: 1.35; transition: background 0.12s ease;
-    }
-    .combo-opt:hover, .combo-opt.hl { background: rgba(112,48,160,0.08); color: var(--purple); }
-    .combo-opt mark { background: rgba(245,158,11,0.28); color: inherit; border-radius: 3px; padding: 0 1px; }
-    .combo-opt.other { border-top: 1px solid var(--gray-100); margin-top: 4px; color: var(--blue); font-weight: 600; }
-    .combo-empty { padding: 12px; font-size: 0.85rem; color: var(--gray-400); text-align: center; }
-    .combo-hint { margin-top: 7px; font-size: 0.78rem; color: var(--gray-400); }
-    .combo-hint.picked { color: var(--green); font-weight: 600; }
+    input.invalid, textarea.invalid { border-color: #fca5a5 !important; background: #fffafa; }
 
     /* ─── Aviso de borrador recuperado ─── */
     .draft-note {
@@ -293,14 +265,27 @@
     .btn-go { border: none; color: #fff; background: linear-gradient(135deg, var(--green), #0d9488); box-shadow: 0 4px 15px rgba(5,150,105,0.3); }
     .btn-go:hover { transform: translateY(-1px); }
 
+    .auto-box {
+      border: 2px dashed var(--gray-200); border-radius: 10px; padding: 14px 16px; background: var(--gray-50);
+    }
+    .auto-val {
+      font-size: 1rem; font-weight: 700; line-height: 1.35;
+      display: flex; align-items: center; gap: 9px;
+    }
+    .auto-val.ok { color: var(--purple); }
+    .auto-val.vacio, .auto-val.cargando { color: var(--gray-400); font-weight: 600; font-size: 0.92rem; }
+    .auto-msg { margin-top: 6px; font-size: 0.8rem; color: var(--gray-500); line-height: 1.45; }
+    .auto-msg.ok { color: var(--green); }
+    .auto-msg.alerta { color: #92400e; font-weight: 600; }
+    .spinner-dark { border-color: rgba(112,48,160,0.25); border-top-color: var(--purple); margin-right: 0; }
+
     @media (max-width: 600px) {
       .step-btn-label { display: none; }
       .step-btn { padding: 7px 10px; }
       .section-header, .fields-area, .nav-bar { padding-left: 18px; padding-right: 18px; }
       .input-wrap, .hint, .star-scale, .star-label { margin-left: 0; }
       .nps-btn { width: 36px; height: 36px; font-size: 0.9rem; }
-      .combo-hint, .field-msg { margin-left: 0; }
-      .combo-list { max-height: 220px; }
+      .field-msg, .auto-box { margin-left: 0; }
       .modal-actions { flex-direction: column-reverse; }
     }
   </style>
@@ -394,66 +379,6 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwI83MqFPYJAJVSqPDCa
 
 const STAR_LABELS = ['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
 
-const EMPRESAS = [
-  "Agropecuaria Las Marías S.A.",
-"Agronorte S.R.L.",
-"Agroservicios Humboldt S.A.",
-"Alma Juniors",
-"ANCA Agronegocios Consultores Asociados S.R.L.",
-"Asociación de Oftalmólogos de Rafaela",
-"Asociación de Oftalmólogos de Santa Fe",
-"Biassoni e Hijos S.A.I.C.A.",
-"Carla Nagel",
-"CEVA Salud Animal",
-"COCYAR S.A.",
-"Colegio de Ingenieros Especialistas de Santa Fe",
-"Colegio de Ingenieros Especialistas de Santa Fe - D1",
-"Colegio de Médicos Veterinarios",
-"Contadores David S.R.L.",
-"Cotillón El Tunel",
-"Distribuidora Oggier S.R.L.",
-"Empresa Provincial de la Energía (EPE)",
-"FESTRAM",
-"Fundación ITEC El Molino",
-"Fundación Sanatorio Santa Fe",
-"Gerenciar S.R.L.",
-"Gloria Argentina S.A. (CORLASA)",
-"Grupo SIE",
-"ICIVet Litoral - Instituto de Ciencias Veterinarias del Litoral",
-"La Hidráulica",
-"Las Heras S.A.",
-"Lautaro Vazquez",
-"Leadermel S.A.",
-"Mercurio Pinturerias",
-"Mondino y Grimaldi",
-"Motion-co S.A.S.",
-"Municipalidad de Esperanza",
-"Municipalidad de San Jerónimo Norte",
-"Mutual Bomberos Esperanza",
-"Nutriar S.A.",
-"Ortopedia Kinen",
-"OSDE",
-"Perren José Luis S.R.L.",
-"Pietcard Electrónica S.R.L.",
-"Primo y Cía. S.A.",
-"REMAX Fortaleza",
-"Rene y Dolly Manfrey S.A.",
-"SAY NO MORE S.R.L.",
-"Sembrar Agropecuaria S.A.",
-"Serprove S.R.L.",
-"SICA Metalúrgica Argentina S.A.",
-"SINAV",
-"Sonia Sapino",
-"Steffen & Asociados",
-"Thorbell S.R.L.",
-"Universidad Nacional de Rafaela (UNRaf)",
-"Universidad Nacional del Litoral (UNL)",
-"Vetacord Comercial S.A.",
-"Vicen Agro S.R.L.",
-"Wohr Química",
-"Yeruvá S.A."
-];
-
 const SECTIONS = [
   {
     id: "datos", label: "Datos", icon: "◉",
@@ -469,9 +394,8 @@ const SECTIONS = [
         hint: "Acá te enviamos el certificado. Revisá bien que no haya errores de tipeo. Ej: maria.gonzalez@empresa.com"
       },
       {
-        name: "empresa", label: "Empresa / Institución", type: "combo",
-        hint: "Buscá la organización donde trabajás o estás haciendo la formación. Si no aparece en la lista, escribila y confirmala.",
-        options: EMPRESAS
+        name: "empresa", label: "Empresa / Institución", type: "auto",
+        hint: "Sale de tu inscripción: es la organización que contrató la formación."
       }
     ]
   },
@@ -615,7 +539,9 @@ function validarCampo(name, rawValue) {
 function pintarValidacion(name) {
   const box = document.getElementById('msg_' + name);
   const input = document.getElementById('input_' + name);
-  const res = validarCampo(name, formData[name]);
+  let res = validarCampo(name, formData[name]);
+  // Si el formato está bien, el mensaje lo define la búsqueda de la inscripción.
+  if (name === 'correo' && !res) res = mensajeInscripcion();
 
   if (input) input.classList.toggle('invalid', !!res && res.level === 'error');
   if (!box) return !res || res.level !== 'error';
@@ -641,174 +567,132 @@ function aplicarCorreccion(name, valor) {
 // Valida todos los campos de una sección. Devuelve true si ninguno tiene error.
 function seccionValida(sec) {
   return sec.fields.every(f => {
-    const res = validarCampo(f.name, formData[f.name]);
+    let res = validarCampo(f.name, formData[f.name]);
+    // Un correo que no figura en la lista tambien frena: sin inscripcion no hay
+    // certificado, y es mejor decirlo aca que despues de 18 preguntas.
+    if (f.name === 'correo' && !res) res = mensajeInscripcion();
     return !res || res.level !== 'error';
   });
 }
 
 // =========================================================================
-// Combobox con búsqueda para la organización
+// Inscripción: la empresa y la formación salen de la planilla, no se eligen
 // =========================================================================
-const comboState = {};
+// La persona no debe poder atribuirse una empresa que no es la que contrató la
+// formación. Buscamos su inscripción por correo y mostramos lo que está cargado.
+const inscripcion = { estado: 'vacio', empresa: '', formacion: '', yaEnviado: false };
+let lookupTimer = null;
+let lookupSeq = 0;
 
-function comboRefs(name) {
-  return {
-    wrap: document.getElementById('combo_' + name),
-    input: document.getElementById('input_' + name),
-    list: document.getElementById('combolist_' + name),
-    hint: document.getElementById('combohint_' + name)
-  };
+function esCampoAuto(f) { return f.type === 'auto'; }
+
+function setInscripcion(estado, datos) {
+  inscripcion.estado = estado;
+  inscripcion.empresa = (datos && datos.empresa) || '';
+  inscripcion.formacion = (datos && datos.formacion) || '';
+  inscripcion.yaEnviado = !!(datos && datos.yaEnviado);
+
+  // El campo del payload se completa solo. Si no se pudo resolver queda vacío:
+  // el Apps Script usa igual la empresa de la planilla.
+  formData.empresa = inscripcion.empresa;
+
+  pintarInscripcion();
+  pintarValidacion('correo');
+  updateProgress();
+  updateStepNav();
+  if (currentStep === SECTIONS.length - 1) checkSubmitState();
+  guardarBorrador();
 }
 
-function comboOpts(name) {
-  const field = SECTIONS.reduce((acc, s) => acc.concat(s.fields), []).find(f => f.name === name);
-  return (field && field.options) || [];
-}
+function pintarInscripcion() {
+  const val = document.getElementById('autoval_empresa');
+  const msg = document.getElementById('automsg_empresa');
+  if (!val || !msg) return;
 
-function comboOpen(name) {
-  const refs = comboRefs(name);
-  if (!refs.wrap) return;
-  refs.wrap.classList.add('open');
-  comboRender(name, refs.input ? refs.input.value : '');
-}
+  const e = inscripcion.estado;
 
-function comboClose(name) {
-  const refs = comboRefs(name);
-  if (refs.wrap) refs.wrap.classList.remove('open');
-  if (comboState[name]) comboState[name].hl = -1;
-}
-
-function comboToggle(name) {
-  const refs = comboRefs(name);
-  if (!refs.wrap) return;
-  if (refs.wrap.classList.contains('open')) { comboClose(name); return; }
-  if (refs.input) { refs.input.focus(); refs.input.select(); }
-  comboOpen(name);
-}
-
-function normalizar(str) {
-  return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-function resaltar(texto, query) {
-  if (!query) return escapeHtml(texto);
-  const i = normalizar(texto).indexOf(normalizar(query));
-  if (i < 0) return escapeHtml(texto);
-  return escapeHtml(texto.slice(0, i)) + '<mark>' + escapeHtml(texto.slice(i, i + query.length)) + '</mark>' + escapeHtml(texto.slice(i + query.length));
-}
-
-function comboRender(name, query) {
-  const refs = comboRefs(name);
-  if (!refs.list) return;
-  const q = String(query || '').trim();
-  const todas = comboOpts(name);
-  const matches = q === '' ? todas : todas.filter(o => normalizar(o).indexOf(normalizar(q)) !== -1);
-
-  comboState[name] = comboState[name] || { hl: -1 };
-  comboState[name].matches = matches.slice();
-  if (comboState[name].hl >= matches.length) comboState[name].hl = -1;
-
-  let html = '';
-  if (matches.length === 0 && q === '') {
-    html += '<div class="combo-empty">No hay organizaciones cargadas.</div>';
-  }
-  matches.forEach(function (opt, i) {
-    html += '<div class="combo-opt' + (i === comboState[name].hl ? ' hl' : '') + '" data-i="' + i + '"'
-         + ' onmousedown="event.preventDefault(); comboPick(&quot;' + name + '&quot;, ' + i + ')">'
-         + resaltar(opt, q) + '</div>';
-  });
-  if (q !== '') {
-    comboState[name].other = q;
-    html += '<div class="combo-opt other" onmousedown="event.preventDefault(); comboPickOther(&quot;' + name + '&quot;)">'
-         + 'Mi organización no está en la lista: usar «' + escapeHtml(q) + '»</div>';
-  } else {
-    comboState[name].other = null;
-  }
-  refs.list.innerHTML = html;
-}
-
-function comboPick(name, i) {
-  const st = comboState[name];
-  const opt = (st && st.matches) ? st.matches[i] : null;
-  if (opt == null) return;
-  comboSet(name, opt, true);
-}
-
-function comboPickOther(name) {
-  const st = comboState[name];
-  if (!st || !st.other) return;
-  comboSet(name, st.other.trim(), false);
-}
-
-function comboSet(name, valor, deLista) {
-  const refs = comboRefs(name);
-  formData[name] = valor;
-  if (refs.input) { refs.input.value = valor; refs.input.className = 'combo-input has-value'; }
-  if (refs.hint) {
-    refs.hint.className = 'combo-hint picked';
-    refs.hint.textContent = deLista
-      ? 'Organización seleccionada de la lista.'
-      : 'Vamos a registrar «' + valor + '». Revisá que esté bien escrito.';
-  }
-  comboClose(name);
-  updateBadgeAndNav(name);
-}
-
-function comboInput(name, valor) {
-  comboOpen(name);
-  comboRender(name, valor);
-  // Mientras escribe todavía no hay selección confirmada.
-  if (formData[name] !== valor) {
-    delete formData[name];
-    const refs = comboRefs(name);
-    if (refs.input) refs.input.className = 'combo-input';
-    if (refs.hint) { refs.hint.className = 'combo-hint'; refs.hint.textContent = 'Elegí una opción de la lista para confirmar.'; }
-    updateBadgeAndNav(name);
-  }
-}
-
-function comboBlur(name) {
-  const refs = comboRefs(name);
-  comboClose(name);
-  const confirmado = formData[name];
-  if (!refs.input) return;
-  if (confirmado) {
-    refs.input.value = confirmado;
-    refs.input.className = 'combo-input has-value';
-  } else if (refs.input.value.trim() !== '') {
-    refs.input.value = '';
-    if (refs.hint) {
-      refs.hint.className = 'combo-hint';
-      refs.hint.textContent = 'No confirmaste ninguna opción, así que el campo quedó vacío.';
-    }
-  }
-}
-
-function comboKey(name, ev) {
-  const st = comboState[name] || { hl: -1, matches: [] };
-  const total = st.matches ? st.matches.length : 0;
-
-  if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
-    ev.preventDefault();
-    comboOpen(name);
-    const cur = comboState[name];
-    cur.hl = ev.key === 'ArrowDown'
-      ? Math.min(total - 1, cur.hl + 1)
-      : Math.max(-1, cur.hl - 1);
-    const refs = comboRefs(name);
-    comboRender(name, refs.input ? refs.input.value : '');
-    const el = document.querySelector('#combolist_' + name + ' .combo-opt.hl');
-    if (el) el.scrollIntoView({ block: 'nearest' });
+  if (e === 'ok') {
+    val.className = 'auto-val ok';
+    val.textContent = inscripcion.empresa || 'Sin empresa registrada';
+    msg.className = 'auto-msg ok';
+    msg.innerHTML = (inscripcion.formacion
+      ? 'Formación: <strong>' + escapeHtml(inscripcion.formacion) + '</strong>. '
+      : '') + 'Lo tomamos de tu inscripción, por eso no se edita.';
     return;
   }
-  if (ev.key === 'Enter') {
-    ev.preventDefault();
-    if (st.hl >= 0) comboPick(name, st.hl);
-    else if (total === 1) comboPick(name, 0);
-    else if (st.other) comboPickOther(name);
+
+  if (e === 'buscando') {
+    val.className = 'auto-val cargando';
+    val.innerHTML = '<span class="spinner spinner-dark"></span>Buscando tu inscripción...';
+    msg.className = 'auto-msg';
+    msg.textContent = '';
     return;
   }
-  if (ev.key === 'Escape') comboClose(name);
+
+  if (e === 'nohay') {
+    val.className = 'auto-val vacio';
+    val.textContent = 'No encontramos tu inscripción';
+    msg.className = 'auto-msg alerta';
+    msg.textContent = 'Revisá el correo de arriba: tiene que ser el mismo al que te llegó la invitación.';
+    return;
+  }
+
+  if (e === 'indefinido') {
+    val.className = 'auto-val vacio';
+    val.textContent = 'Se toma de tu inscripción';
+    msg.className = 'auto-msg';
+    msg.textContent = 'No pudimos consultarla ahora, pero el certificado igual sale con la empresa que tenemos registrada.';
+    return;
+  }
+
+  val.className = 'auto-val vacio';
+  val.textContent = 'Se completa con tu correo';
+  msg.className = 'auto-msg';
+  msg.textContent = 'Escribí tu correo arriba y buscamos tu inscripción.';
+}
+
+// Mensaje del campo correo que depende de la búsqueda, no del formato.
+function mensajeInscripcion() {
+  if (inscripcion.estado === 'nohay') {
+    return { level: 'error', msg: 'Este correo no figura en la lista de la formación. Usá el mismo al que te llegó la invitación.' };
+  }
+  if (inscripcion.estado === 'ok' && inscripcion.yaEnviado) {
+    return { level: 'warn', msg: 'Ya te enviamos el certificado a esta dirección. Podés completar la evaluación igual, pero no se emite uno nuevo.' };
+  }
+  return null;
+}
+
+function consultarInscripcion() {
+  const correo = String(formData.correo || '').trim();
+  const problemaFormato = validarCampo('correo', correo);
+
+  if (!correo || (problemaFormato && problemaFormato.level === 'error')) {
+    setInscripcion('vacio');
+    return;
+  }
+
+  setInscripcion('buscando');
+  const seq = ++lookupSeq;
+
+  fetch(SCRIPT_URL + '?correo=' + encodeURIComponent(correo))
+    .then(r => r.text())
+    .then(texto => {
+      if (seq !== lookupSeq) return;  // llegó tarde, ya hay otra consulta
+      let d = null;
+      try { d = JSON.parse(texto); } catch (err) { d = null; }
+
+      if (d && d.status === 'ok') setInscripcion('ok', d);
+      else if (d && d.code === 'EMAIL_NO_ENCONTRADO') setInscripcion('nohay');
+      else setInscripcion('indefinido');  // backend viejo o respuesta rara: no bloqueamos
+    })
+    .catch(() => {
+      if (seq === lookupSeq) setInscripcion('indefinido');
+    });
+}
+
+function agendarConsulta() {
+  clearTimeout(lookupTimer);
+  lookupTimer = setTimeout(consultarInscripcion, 600);
 }
 
 // =========================================================================
@@ -848,6 +732,7 @@ function restaurarBorrador() {
   if (Object.keys(formData).length === 0) return;
   const nota = document.getElementById('draftNote');
   if (nota) nota.className = 'draft-note show';
+  if (formData.correo) consultarInscripcion();
 }
 
 function descartarBorrador() {
@@ -888,8 +773,9 @@ function updateStepNav() {
   SECTIONS.forEach((s, i) => {
     const btn = document.getElementById(`stepBtn${i}`);
     const badge = document.getElementById(`stepBadge${i}`);
-    const filled = s.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length;
-    const done = filled === s.fields.length;
+    const filled = s.fields.filter(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== '')).length;
+    // Una seccion con un campo invalido no esta lista, aunque este completa.
+    const done = filled === s.fields.length && seccionValida(s);
     btn.className = 'step-btn' + (i === currentStep ? ' active' : '') + (done ? ' done' : '');
     badge.innerHTML = done ? '✓' : s.icon;
   });
@@ -897,12 +783,12 @@ function updateStepNav() {
 
 function updateProgress() {
   const total = SECTIONS.reduce((a, s) => a + s.fields.length, 0);
-  const filled = SECTIONS.reduce((a, s) => a + s.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length, 0);
+  const filled = SECTIONS.reduce((a, s) => a + s.fields.filter(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== '')).length, 0);
   const pct = Math.round((filled / total) * 100);
   document.getElementById('progressPct').textContent = pct + '%';
   document.getElementById('progressFill').style.width = pct + '%';
   const sec = SECTIONS[currentStep];
-  const secFilled = sec.fields.filter(f => String(formData[f.name] ?? '').trim() !== '').length;
+  const secFilled = sec.fields.filter(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== '')).length;
   document.getElementById('navCounter').textContent = secFilled + '/' + sec.fields.length + ' completados';
 }
 
@@ -939,21 +825,11 @@ function renderStep() {
       f.options.forEach(opt => { html += `<option value="${escapeHtml(opt)}" ${val === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`; });
       html += `</select>`;
 
-    } else if (f.type === 'combo') {
-      const conf = String(val).trim() !== '';
-      html += `<div class="combo" id="combo_${f.name}">
-                 <input type="text" id="input_${f.name}" class="combo-input${inputClass}"
-                        autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list"
-                        placeholder="Escribí las primeras letras de tu organización..."
-                        value="${escapeHtml(String(val))}"
-                        oninput="comboInput('${f.name}', this.value)"
-                        onfocus="comboOpen('${f.name}')"
-                        onblur="comboBlur('${f.name}')"
-                        onkeydown="comboKey('${f.name}', event)">
-                 <button type="button" class="combo-toggle" onclick="comboToggle('${f.name}')" aria-label="Ver todas las opciones">▼</button>
-                 <div class="combo-list" id="combolist_${f.name}"></div>
-               </div>
-               <div class="combo-hint${conf ? ' picked' : ''}" id="combohint_${f.name}">${conf ? 'Organización confirmada.' : 'Buscá por nombre, o tocá la flecha para ver la lista completa.'}</div>`;
+    } else if (f.type === 'auto') {
+      html += `<div class="auto-box">
+                 <div class="auto-val vacio" id="autoval_${f.name}">Se completa con tu correo</div>
+                 <div class="auto-msg" id="automsg_${f.name}">Escribí tu correo arriba y buscamos tu inscripción.</div>
+               </div>`;
 
     } else if (f.type === 'rating') {
       html += `<div class="star-scale">
@@ -997,6 +873,7 @@ function renderStep() {
   if (isLast) checkSubmitState();
   document.getElementById('errorBar').className = 'error-bar';
   sec.fields.forEach(f => pintarValidacion(f.name));
+  if (sec.fields.some(esCampoAuto)) pintarInscripcion();
   updateStepNav(); updateProgress();
 }
 
@@ -1046,6 +923,7 @@ function updateBadgeAndNav(name) {
   const badge = document.getElementById('badge_' + name);
   if (badge) badge.className = 'q-badge' + (hasVal ? ' filled' : '');
   pintarValidacion(name);
+  if (name === 'correo') agendarConsulta();
   guardarBorrador();
   updateProgress(); updateStepNav();
   if (currentStep === SECTIONS.length - 1) checkSubmitState();
@@ -1055,7 +933,7 @@ function goToStep(idx) {
   if (idx !== currentStep) {
     if (idx > currentStep) {
       const sec = SECTIONS[currentStep];
-      const allFilled = sec.fields.every(f => String(formData[f.name] ?? '').trim() !== '');
+      const allFilled = sec.fields.every(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== ''));
       if (!allFilled) {
         const errBar = document.getElementById('errorBar');
         errBar.textContent = 'Por favor, completá todas las preguntas de esta página para avanzar.';
@@ -1083,13 +961,13 @@ function nextStep() { if (currentStep < SECTIONS.length - 1) goToStep(currentSte
 function prevStep() { if (currentStep > 0) goToStep(currentStep - 1); }
 
 function checkSubmitState() {
-  const allFilled = SECTIONS.every(s => s.fields.every(f => String(formData[f.name] ?? '').trim() !== ''));
+  const allFilled = SECTIONS.every(s => s.fields.every(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== '')));
   const allValid = SECTIONS.every(s => seccionValida(s));
   document.getElementById('btnSubmit').disabled = !(allFilled && allValid);
 }
 
 function submitForm() {
-  const allFilled = SECTIONS.every(s => s.fields.every(f => String(formData[f.name] ?? '').trim() !== ''));
+  const allFilled = SECTIONS.every(s => s.fields.every(f => (esCampoAuto(f) || String(formData[f.name] ?? '').trim() !== '')));
   if (!allFilled) return;
 
   if (!SECTIONS.every(s => seccionValida(s))) {
